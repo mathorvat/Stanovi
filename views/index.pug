@@ -1,0 +1,201 @@
+extends layout
+
+block content  
+  p Welcome to #{title}     
+    form(action="/insert", method="post")
+      input(type="text", name="url_oglas", placeholder="link sa Njuškala") 
+      button(type="submit") Dodaj
+  
+  //Mapa se ovdje trpa
+  p(id="prosjek")
+  p Legenda:
+  p(style="color:yellow;") Veliki stan > 60 m2    
+  p(style="color:green;") Srednji stan od 40 do 60 m2   
+  p(style="color:blue;") Mali stan < 40 m2    
+  div(id='map')
+  br
+
+  script(src='javascripts/leaflet.extra-markers.min.js')
+  script.     
+    let stan = !{JSON.stringify(data)};   
+    let stan_history = !{JSON.stringify(data_history)};   
+
+  //kod koji trpa mapu u div gore  
+  script(src='/javascripts/mapa.js')
+
+  // Postavljanje markera na mjesta------------------------------------------------------------------ 
+  script.
+    var i;
+    var markers = {};
+
+
+    var today = new Date();
+    var createdOn;
+
+    var msInDay = 24 * 60 * 60 * 1000; 
+    var diff;
+
+    var circle_color;    
+
+    var prosjek_cijene = 0;    
+        
+    for (i = 0; i < stan.length; i++) {
+
+      var stan_history_this = []; 
+
+      for (j = 0; j < stan_history.length; j++){
+        if(stan[i].sifra_oglasa === stan_history[j].sifra_oglasa){
+          stan_history_this.push(stan_history[j].cijena_eu);
+        }
+      } 
+
+      var rez = '<div style="float:right; color:gray;">-</div>';
+
+      if(stan_history_this.length > 1){
+        var novo = stan_history_this[0];
+        var staro = stan_history_this[1];
+        
+        if(novo > staro){ rez = '<div style="float:right; color:red;">&#8593</div>';}
+        else if(novo < staro){ rez = '<div style="float:right; color:green;">&#8595</div>';}
+      }
+      
+      var popup_text = `<a href="${stan[i].url}" target="_blank">${stan[i].naslov}</a><hr>
+      Stambena površina: ${stan[i].stambena_povrsina}<hr>
+      Cijena: ${stan[i].cijena_kn} ~ ${stan[i].cijena_eu.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ".")} € -- ${stan[i].cijena_m2} €/m2 ${rez}<hr>
+      Broj soba: ${stan[i].broj_soba}<hr>
+      Kat: ${stan[i].kat}<hr>
+      Godina izgradnje: ${stan[i].godina_izgradnje}<hr>
+      Datum objave: ${stan[i].datum_objave}<hr>
+      Osvježeno: ${stan[i].date_updated}<hr>
+      <form action="/komentiraj", method="post">
+        <textarea name="komentar" rows="5" cols="40">${stan[i].komentar}</textarea><br>
+        <button name="spremi_komentar" value="${stan[i].sifra_oglasa}">Komentiraj</button>
+      </form><br><br>      
+      <form action="/update", method="post"><button name="refresh" value="${stan[i].url}">Osvježi</button></form>
+      <form action="/remove", method="post"><button style="float:right; margin-top:-10%" name="remove" value="${stan[i].sifra_oglasa}">Makni</button></form>`;
+
+      prosjek_cijene = prosjek_cijene + stan[i].cijena_m2;
+
+      kvadratura = stan[i].stambena_povrsina.substring(0, stan[i].stambena_povrsina.length - 3);
+
+      kvadratura = parseFloat(kvadratura);
+      
+
+      createdOn = new Date(stan[i].date_updated);
+
+      diff = (+today - +createdOn)/msInDay;
+
+      if(stan[i].is_active){
+        if(diff > 2){
+          circle_color = 'gray';
+        }
+        else{
+          if(kvadratura <= 40){
+              circle_color = 'blue';
+            }
+            else if(kvadratura > 40  && kvadratura < 60){
+              circle_color = 'green';
+            }
+            else if(kvadratura >= 60){
+              circle_color = 'yellow';
+            }  
+        }
+      }
+      else{
+        circle_color = 'red';
+      }
+      
+
+      if(stan[i].tocna_lokacija){   
+        if(stan[i].is_active){
+
+          if(diff > 2){
+            markers[stan[i].sifra_oglasa] = L.marker([stan[i].lat, stan[i].lng], {icon: stan_update_needed}).bindPopup(popup_text).addTo(mymap);
+          }
+          else{
+            if(kvadratura <= 40){
+              markers[stan[i].sifra_oglasa] = L.marker([stan[i].lat, stan[i].lng], {icon: stan_small}).bindPopup(popup_text).addTo(mymap);
+            }
+            else if(kvadratura > 40  && kvadratura < 60){
+              markers[stan[i].sifra_oglasa] = L.marker([stan[i].lat, stan[i].lng], {icon: stan_medium}).bindPopup(popup_text).addTo(mymap);
+            }
+            else if(kvadratura >= 60){
+              markers[stan[i].sifra_oglasa] = L.marker([stan[i].lat, stan[i].lng], {icon: stan_large}).bindPopup(popup_text).addTo(mymap);
+            }          
+          }           
+        }
+        else{
+          markers[stan[i].sifra_oglasa] = L.marker([stan[i].lat, stan[i].lng], {icon: stan_neaktivan}).bindPopup(popup_text).addTo(mymap);
+        }
+
+      }
+      else{
+        markers[stan[i].sifra_oglasa] = L.circle([stan[i].lat, stan[i].lng], {
+            color: circle_color,
+            fillColor: '#03ecfc',
+            fillOpacity: 0.2,
+            radius: 700
+        }).bindPopup(popup_text).addTo(mymap); 
+      }      
+      
+    } 
+    
+    prosjek_cijene = prosjek_cijene/stan.length;    
+
+    function click_marker(sifra){
+      markers[sifra].fireEvent('click');      
+    }
+
+    document.getElementById("prosjek").innerHTML = "Prosječna cijena (€/m2): <strong>"+prosjek_cijene.toFixed(2)+"</strong>";
+
+  //Tablica stanova ispod mape--------------------------------------------------------   
+  for app in data
+    - var kvadratura = parseFloat(app.stambena_povrsina.substring(0, app.stambena_povrsina.length - 3))
+    - var boja_podloge;
+    - var boja_slova = 'black';
+
+    - var msInDay = 24 * 60 * 60 * 1000; 
+    - var today = new Date();
+    - var createdOn = new Date(app.date_updated);
+    - var diff = (+today - +createdOn)/msInDay;
+    - var stan_history_this = [];    
+    - var rez_color = '';
+    
+
+    for app_history in data_history
+      if app.sifra_oglasa === app_history.sifra_oglasa
+        - stan_history_this.push(app_history.cijena_eu);
+    
+    if stan_history_this.length > 1
+      - var novo = stan_history_this[0];
+      - var staro = stan_history_this[1]; 
+      if novo > staro        
+        - rez_color = 'red';
+      else if novo < staro        
+        - rez_color = 'green';
+
+    if diff > 2
+      - boja_podloge = 'gray';
+      - boja_slova = 'white';
+    else
+      if kvadratura <= 40
+        - boja_podloge = 'blue';
+        - boja_slova = 'white';
+      else if kvadratura > 40 && kvadratura < 60
+        - boja_podloge = 'green';
+        - boja_slova = 'white';
+      else if kvadratura >= 60
+        - boja_podloge = 'yellow';    
+    
+    table(id="test" style="background-color:"+boja_podloge+"; color:"+boja_slova+"" onclick="click_marker("+app.sifra_oglasa+"); return false;")
+      tr 
+        td #{app.stambena_povrsina}                     
+      tr
+        td #{app.cijena_kn} ~  #{app.cijena_eu.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ".")} €     --     #{app.cijena_m2} €/m2
+        td(style="width:20%;")
+        if app.komentar === null
+        else
+          td #{app.komentar}         
+        div(style="background-color:"+rez_color+";")        
+    hr 
+  
