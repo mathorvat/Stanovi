@@ -68,7 +68,7 @@ block content
       Datum objave: ${stan[i].datum_objave}<hr>
       Osvježeno: ${stan[i].date_updated}<hr>
       <form action="/komentiraj", method="post">
-        <textarea name="komentar" rows="5" cols="40">${stan[i].komentar}</textarea><br>
+        <textarea name="komentar" rows="5" cols="35%">${stan[i].komentar}</textarea><br>
         <button name="spremi_komentar" value="${stan[i].sifra_oglasa}">Komentiraj</button>
       </form><br><br>      
       <form action="/update", method="post"><button name="refresh" value="${stan[i].url}">Osvježi</button></form>

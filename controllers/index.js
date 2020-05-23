@@ -177,8 +177,15 @@ function get_oglas(url, action){
     
     
     //Koordinate    
-    var koordinate = $('script').get()[25].children[0].data;
+    
+    var koordinate = $('script').get()[25].children[0].data;    
+
+    if(!koordinate.includes('defaultMarker')){
+      koordinate = $('script').get()[26].children[0].data;      
+    }
+
     var koordinate_fix = koordinate.match(/(?<=defaultMarker":{)(.*)(?=,"appro)/)[0].split(",");
+   
     var lat = koordinate_fix[0].split(":")[1];
     var lng = koordinate_fix[1].split(":")[1];  
 
