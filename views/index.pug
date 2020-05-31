@@ -16,10 +16,10 @@ block content
   br
 
   script(src='javascripts/leaflet.extra-markers.min.js')
-  script.     
+  script.         
     let stan = !{JSON.stringify(data)};   
-    let stan_history = !{JSON.stringify(data_history)};   
-
+    let stan_history = !{JSON.stringify(data_history)};  
+ 
   //kod koji trpa mapu u div gore  
   script(src='/javascripts/mapa.js')
 
@@ -105,38 +105,39 @@ block content
         circle_color = 'red';
       }
       
+      if(stan[i].lat !== 'NEMA'){
+          if(stan[i].tocna_lokacija){   
+            if(stan[i].is_active){
 
-      if(stan[i].tocna_lokacija){   
-        if(stan[i].is_active){
+              if(diff > 2){
+                markers[stan[i].sifra_oglasa] = L.marker([stan[i].lat, stan[i].lng], {icon: stan_update_needed}).bindPopup(popup_text).addTo(mymap);
+              }
+              else{
+                if(kvadratura <= 40){
+                  markers[stan[i].sifra_oglasa] = L.marker([stan[i].lat, stan[i].lng], {icon: stan_small}).bindPopup(popup_text).addTo(mymap);
+                }
+                else if(kvadratura > 40  && kvadratura < 60){
+                  markers[stan[i].sifra_oglasa] = L.marker([stan[i].lat, stan[i].lng], {icon: stan_medium}).bindPopup(popup_text).addTo(mymap);
+                }
+                else if(kvadratura >= 60){
+                  markers[stan[i].sifra_oglasa] = L.marker([stan[i].lat, stan[i].lng], {icon: stan_large}).bindPopup(popup_text).addTo(mymap);
+                }          
+              }           
+            }
+            else{
+              markers[stan[i].sifra_oglasa] = L.marker([stan[i].lat, stan[i].lng], {icon: stan_neaktivan}).bindPopup(popup_text).addTo(mymap);
+            }
 
-          if(diff > 2){
-            markers[stan[i].sifra_oglasa] = L.marker([stan[i].lat, stan[i].lng], {icon: stan_update_needed}).bindPopup(popup_text).addTo(mymap);
           }
           else{
-            if(kvadratura <= 40){
-              markers[stan[i].sifra_oglasa] = L.marker([stan[i].lat, stan[i].lng], {icon: stan_small}).bindPopup(popup_text).addTo(mymap);
-            }
-            else if(kvadratura > 40  && kvadratura < 60){
-              markers[stan[i].sifra_oglasa] = L.marker([stan[i].lat, stan[i].lng], {icon: stan_medium}).bindPopup(popup_text).addTo(mymap);
-            }
-            else if(kvadratura >= 60){
-              markers[stan[i].sifra_oglasa] = L.marker([stan[i].lat, stan[i].lng], {icon: stan_large}).bindPopup(popup_text).addTo(mymap);
-            }          
-          }           
-        }
-        else{
-          markers[stan[i].sifra_oglasa] = L.marker([stan[i].lat, stan[i].lng], {icon: stan_neaktivan}).bindPopup(popup_text).addTo(mymap);
-        }
-
-      }
-      else{
-        markers[stan[i].sifra_oglasa] = L.circle([stan[i].lat, stan[i].lng], {
-            color: circle_color,
-            fillColor: '#03ecfc',
-            fillOpacity: 0.2,
-            radius: 700
-        }).bindPopup(popup_text).addTo(mymap); 
-      }      
+            markers[stan[i].sifra_oglasa] = L.circle([stan[i].lat, stan[i].lng], {
+                color: circle_color,
+                fillColor: '#03ecfc',
+                fillOpacity: 0.2,
+                radius: 700
+            }).bindPopup(popup_text).addTo(mymap); 
+          }
+      }  
       
     } 
     
@@ -178,16 +179,25 @@ block content
       - boja_podloge = 'gray';
       - boja_slova = 'white';
     else
-      if kvadratura <= 40
-        - boja_podloge = 'blue';
+      if app.is_active == 0
+        - boja_podloge = 'red';
         - boja_slova = 'white';
-      else if kvadratura > 40 && kvadratura < 60
-        - boja_podloge = 'green';
-        - boja_slova = 'white';
-      else if kvadratura >= 60
-        - boja_podloge = 'yellow';    
-    
-    table(id="test" style="background-color:"+boja_podloge+"; color:"+boja_slova+"" onclick="click_marker("+app.sifra_oglasa+"); return false;")
+      else
+        if kvadratura <= 40
+          - boja_podloge = 'blue';
+          - boja_slova = 'white';
+        else if kvadratura > 40 && kvadratura < 60
+          - boja_podloge = 'green';
+          - boja_slova = 'white';
+        else if kvadratura >= 60
+          - boja_podloge = 'yellow';    
+    //window.location='"+app.url+"';
+    if app.lat === 'NEMA'
+      - onclick_var = "window.open='"+app.url+"';";
+    else
+      - onclick_var = "click_marker("+app.sifra_oglasa+"); return false;";
+
+    table(id="test" style="background-color:"+boja_podloge+"; color:"+boja_slova+"" onclick=""+onclick_var+"")
       tr 
         td #{app.stambena_povrsina}                     
       tr
@@ -196,6 +206,10 @@ block content
         if app.komentar === null
         else
           td #{app.komentar}         
-        div(style="background-color:"+rez_color+";")        
+        div(style="background-color:"+rez_color+";")
+        if app.lat === 'NEMA'
+          img(src='/img/not_on_map.png' alt='Not on Map' width='2%' height='2%')
+          form(action="/remove", method="post")
+            button(name="remove" value=""+app.sifra_oglasa+"") Makni       
     hr 
   

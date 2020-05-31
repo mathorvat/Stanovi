@@ -43,6 +43,7 @@ exports.update_stan = function(req, res, next) {
   console.log("Update stan: ", req.body.refresh);
  
   get_oglas(req.body.refresh, 'update'); 
+  
   res.redirect('/');
 }
 
@@ -177,21 +178,45 @@ function get_oglas(url, action){
     
     
     //Koordinate    
+    var i = 20;
+    var koordinate = 'NEMA';
+    var lat = 'NEMA';
+    var lng = 'NEMA';
     
-    var koordinate = $('script').get()[25].children[0].data;    
-
+    while(i < $('script').length){    
+      if($('script')[i].childNodes.length){    
+        if($('script').get()[i].children[0].data.includes('defaultMarker')){
+          koordinate = $('script').get()[i].children[0].data;
+          break;
+        }
+      }
+      i++;
+    }
+    //var koordinate = $('script').get()[24].children[0].data;    
+    
+    /*
     if(!koordinate.includes('defaultMarker')){
       koordinate = $('script').get()[26].children[0].data;      
     }
-
-    var koordinate_fix = koordinate.match(/(?<=defaultMarker":{)(.*)(?=,"appro)/)[0].split(",");
+    */
+    if(koordinate !== 'NEMA'){
+      var koordinate_fix = koordinate.match(/(?<=defaultMarker":{)(.*)(?=,"appro)/)[0].split(",");
    
-    var lat = koordinate_fix[0].split(":")[1];
-    var lng = koordinate_fix[1].split(":")[1];  
+      var lat = koordinate_fix[0].split(":")[1];
+      var lng = koordinate_fix[1].split(":")[1]; 
+    }
+    
+     
 
    
     var datum_objave = $('.ClassifiedDetailSystemDetails-listData').text().split("\n")[1].trim();
-    var oglas_prikazan = $('.ClassifiedDetailSystemDetails-listData').text().split("\n")[2].trim().substr(10);
+    var oglas_prikazan = $('.ClassifiedDetailSystemDetails-listData').text().split("\n")[2].trim();
+
+    if(oglas_prikazan.includes('do prodaje')){
+      oglas_prikazan = oglas_prikazan.substr(10);
+    }
+
+    console.log(oglas_prikazan);
     
     var stan = {
       sifra_oglasa : sifra_oglasa,      
