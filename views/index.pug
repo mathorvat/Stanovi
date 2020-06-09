@@ -175,12 +175,12 @@ block content
       else if novo < staro        
         - rez_color = 'green';
 
-    if diff > 2
-      - boja_podloge = 'gray';
-      - boja_slova = 'white';
+    if app.is_active == 0
+      - boja_podloge = 'red';
+      - boja_slova = 'white';    
     else
-      if app.is_active == 0
-        - boja_podloge = 'red';
+      if diff > 2
+        - boja_podloge = 'gray';
         - boja_slova = 'white';
       else
         if kvadratura <= 40
