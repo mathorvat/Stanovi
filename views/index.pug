@@ -1,17 +1,25 @@
 extends layout
 
 block content  
-  p Welcome to #{title}     
+  p Welcome to #{title}
     form(action="/insert", method="post")
       input(type="text", name="url_oglas", placeholder="link sa Njuškala") 
       button(type="submit") Dodaj
   
+  a(href='https://www.njuskalo.hr/prodaja-stanova/zagreb?adsWithImages=1' target="_blank") Njuškalo<br>
+
+  a(href='https://www.index.hr/oglasi/prodaja-stanova/gid/3278?pojam=&sortby=1&elementsNum=100&cijenaod=0&cijenado=32000000&tipoglasa=1&pojamZup=1153&grad=0&naselje=&attr_Int_988=&attr_Int_887=&oglaslika=1&attr_bit_stan=&attr_bit_brojEtaza=&attr_gr_93_1=&attr_gr_93_2=&attr_Int_978=&attr_Int_1334=&attr_bit_eneregetskiCertifikat=&vezani_na=988-887_562-563_978-1334' target="_blank") Index oglasi<br>
+
+  a(href='https://www.oglasnik.hr/stanovi-prodaja?ad_location_2%5B%5D=7442&ad_params_uploadable=1&ad_price_code=EUR' target="_blank") Oglasnik<br>
+
+  a(href='https://immorex.hr/properties?location=619,620,621,622,623,624,625,626,627,628,629,630,631,632,633,634,635,636,637&homeType=5&contract=2' target="_blank") Immorex<br>
+
   //Mapa se ovdje trpa
   p(id="prosjek")
   p Legenda:
   p(style="color:yellow;") Veliki stan > 60 m2    
-  p(style="color:green;") Srednji stan od 40 do 60 m2   
-  p(style="color:blue;") Mali stan < 40 m2    
+  p(style="color:green;") Srednji stan od 50 do 60 m2   
+  p(style="color:blue;") Mali stan < 50 m2    
   div(id='map')
   br
 
@@ -90,10 +98,10 @@ block content
           circle_color = 'gray';
         }
         else{
-          if(kvadratura <= 40){
+          if(kvadratura < 50){
               circle_color = 'blue';
             }
-            else if(kvadratura > 40  && kvadratura < 60){
+            else if(kvadratura >= 50  && kvadratura < 60){
               circle_color = 'green';
             }
             else if(kvadratura >= 60){
@@ -113,10 +121,10 @@ block content
                 markers[stan[i].sifra_oglasa] = L.marker([stan[i].lat, stan[i].lng], {icon: stan_update_needed}).bindPopup(popup_text).addTo(mymap);
               }
               else{
-                if(kvadratura <= 40){
+                if(kvadratura < 50){
                   markers[stan[i].sifra_oglasa] = L.marker([stan[i].lat, stan[i].lng], {icon: stan_small}).bindPopup(popup_text).addTo(mymap);
                 }
-                else if(kvadratura > 40  && kvadratura < 60){
+                else if(kvadratura >= 50  && kvadratura < 60){
                   markers[stan[i].sifra_oglasa] = L.marker([stan[i].lat, stan[i].lng], {icon: stan_medium}).bindPopup(popup_text).addTo(mymap);
                 }
                 else if(kvadratura >= 60){
@@ -183,10 +191,10 @@ block content
         - boja_podloge = 'gray';
         - boja_slova = 'white';
       else
-        if kvadratura <= 40
+        if kvadratura < 50
           - boja_podloge = 'blue';
           - boja_slova = 'white';
-        else if kvadratura > 40 && kvadratura < 60
+        else if kvadratura >= 50 && kvadratura < 60
           - boja_podloge = 'green';
           - boja_slova = 'white';
         else if kvadratura >= 60
@@ -199,7 +207,7 @@ block content
 
     table(id="test" style="background-color:"+boja_podloge+"; color:"+boja_slova+"" onclick=""+onclick_var+"")
       tr 
-        td #{app.stambena_povrsina}                     
+        td #{app.stambena_povrsina}                      
       tr
         td #{app.cijena_kn} ~  #{app.cijena_eu.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ".")} €     --     #{app.cijena_m2} €/m2
         td(style="width:20%;")
@@ -208,7 +216,8 @@ block content
           td #{app.komentar}         
         div(style="background-color:"+rez_color+";")
         if app.lat === 'NEMA'
-          img(src='/img/not_on_map.png' alt='Not on Map' width='2%' height='2%')
+          a(href=app.url target="_blank")
+            img(src='/img/not_on_map.png' alt='Not on Map' width='2%' height='2%')
           form(action="/remove", method="post")
             button(name="remove" value=""+app.sifra_oglasa+"") Makni       
     hr 
