@@ -5,6 +5,16 @@ block content
     form(action="/insert", method="post")
       input(type="text", name="url_oglas", placeholder="link sa Njuškala") 
       button(type="submit") Dodaj
+
+  form(action="/insert_manual", method="post")
+    input(type="text", name="url_oglas_manual", placeholder="link na oglas") 
+    input(type="text", name="naslov_manual", placeholder="naslov oglasa") 
+    input(type="text", name="veličina_manual", placeholder="veličina m2 - 49,45") 
+    input(type="text", name="cijena_eu_manual", placeholder="cijena € - 89000") 
+    input(type="text", name="cijena_kn_manual", placeholder="cijena kn - 600.000") 
+    input(type="text", name="komentar_manual", placeholder="Komentar") 
+    button(type="submit") Dodaj ručno oglas
+  <br><br>
   
   a(href='https://www.njuskalo.hr/prodaja-stanova/zagreb?adsWithImages=1' target="_blank") Njuškalo<br>
 
@@ -219,6 +229,6 @@ block content
           a(href=app.url target="_blank")
             img(src='/img/not_on_map.png' alt='Not on Map' width='2%' height='2%')
           form(action="/remove", method="post")
-            button(name="remove" value=""+app.sifra_oglasa+"") Makni       
+            button(name="remove" value=""+app.naslov+"") Makni       
     hr 
   

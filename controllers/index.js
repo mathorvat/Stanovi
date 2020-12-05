@@ -37,6 +37,28 @@ exports.submit_stan = function(req, res, next) {
   res.redirect('/');
 }
 
+//submita manualni unos stana i vraća na glavnu
+exports.submit_stan_manual = function(req, res, next) {
+  console.log("Stan manual: ", req.body.url_oglas_manual);
+  var is_active = 1;  
+  var cijena_eu = req.body.cijena_eu_manual;
+  var stambena_povrsina = req.body.veličina_manual;
+  var cijena_m2 = (cijena_eu/parseFloat(stambena_povrsina.replace(",","."))).toFixed(2);
+
+  var stan = {          
+    naslov : req.body.naslov_manual,
+    cijena_kn : req.body.cijena_kn_manual,
+    cijena_eu : req.body.cijena_eu_manual,
+    stambena_povrsina : req.body.veličina_manual,
+    cijena_m2 : cijena_m2,   
+    url : req.body.url_oglas_manual,
+    is_active : is_active
+  };
+
+  umetanje_manual(stan);
+  res.redirect('/');
+}
+
 
 //update gumb iz marker popup-a --- 2do
 exports.update_stan = function(req, res, next) {
@@ -70,7 +92,7 @@ exports.remove_stan = function(req, res, next) {
   
   var sql = `UPDATE stan 
   SET is_visible = 0  
-  WHERE sifra_oglasa = "${req.body.remove}"`;
+  WHERE naslov = "${req.body.remove}"`;
 
   connection.query(sql, function (err, result) {
     if (err) throw err;
@@ -283,6 +305,33 @@ function umetanje(stan){
   });
 
   add_history(stan);  
+
+}
+
+function umetanje_manual(stan){
+  
+  //napraviti provjeru po sifri oglasa ako sam već doda da ne dodajem opet
+  //insertanje u tablicu 
+ 
+ var sql = `INSERT IGNORE INTO stan 
+  SET naslov = "${stan.naslov}",
+  cijena_kn = "${stan.cijena_kn} kn", 
+  cijena_eu = "${stan.cijena_eu}",
+  stambena_povrsina = "${stan.stambena_povrsina} m²", 
+  cijena_m2 = "${stan.cijena_m2}", 
+  lat = "NEMA", 
+  lng = "NEMA",
+  tocna_lokacija = "0",
+  url = "${stan.url}",
+  date_added = NOW(),
+  date_updated = NOW()`;
+
+  connection.query(sql, function (err, result) {
+    if (err) throw err;
+    console.log("1 record inserted");
+  });
+
+  //add_history(stan);  
 
 }
 
