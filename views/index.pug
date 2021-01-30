@@ -15,6 +15,10 @@ block content
     input(type="text", name="komentar_manual", placeholder="Komentar") 
     button(type="submit") Dodaj ručno oglas
   <br><br>
+
+  form(action="/update_all", method="post")
+      button(type="submit") Osvježi Sve
+  <br><br>
   
   a(href='https://www.njuskalo.hr/prodaja-stanova/zagreb?adsWithImages=1' target="_blank") Njuškalo<br>
 
@@ -90,7 +94,8 @@ block content
         <button name="spremi_komentar" value="${stan[i].sifra_oglasa}">Komentiraj</button>
       </form><br><br>      
       <form action="/update", method="post"><button name="refresh" value="${stan[i].url}">Osvježi</button></form>
-      <form action="/remove", method="post"><button style="float:right; margin-top:-10%" name="remove" value="${stan[i].sifra_oglasa}">Makni</button></form>`;
+      <form action="/remove", method="post"><button style="float:right; margin-top:-10%" name="remove" value="${stan[i].naslov}">Makni</button></form>`;
+      //<form action="/remove", method="post"><button style="float:right; margin-top:-10%" name="remove" value="${stan[i].sifra_oglasa}">Makni</button></form>`;
 
       prosjek_cijene = prosjek_cijene + stan[i].cijena_m2;
 
@@ -189,9 +194,9 @@ block content
       - var novo = stan_history_this[0];
       - var staro = stan_history_this[1]; 
       if novo > staro        
-        - rez_color = 'red';
+        - rez_color = 'purple';
       else if novo < staro        
-        - rez_color = 'green';
+        - rez_color = 'purple';
 
     if app.is_active == 0
       - boja_podloge = 'red';
